@@ -1,6 +1,6 @@
 # TTGO_TS ESP32 AHD w/ PlatformIO+VSCode[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <br>
-An artifial horizontal display(128x128) with TTGO_TS_ESP32 MPU9250  <br>
+An artificial horizontal display(128x128) with TTGO_TS_ESP32 MPU9250  <br>
 <br>
 
 <img src="picture/TTGO_TS_AHD.gif"/> &nbsp;&nbsp;&nbsp;
