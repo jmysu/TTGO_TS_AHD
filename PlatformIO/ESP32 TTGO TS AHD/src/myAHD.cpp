@@ -212,7 +212,7 @@ void testRoll(void)
   tft.setTextDatum(TC_DATUM);            // Centre middle justified
   tft.drawString("Roll test", 64, 10, 1);
 
-  for (int a = 0; a < 360; a++) {
+  for (int a = 0; a < 360; a+=2) {
     //delay(REDRAW_DELAY / 2);
     updateHorizon(rollGenerator(128), 0);
   }
@@ -231,12 +231,12 @@ void testPitch(void)
   tft.setTextDatum(TC_DATUM);            // Centre middle justified
   tft.drawString("Pitch test", 64, 10, 1);
 
-  for (int p = 0; p > -64; p--) {
+  for (int p = 0; p > -64; p-=4) {
     delay(REDRAW_DELAY / 2);
     updateHorizon(0, p);
   }
 
-  for (int p = -64; p < 64; p++) {
+  for (int p = -64; p < 64; p+=4) {
     delay(REDRAW_DELAY / 2);
     updateHorizon(0, p);
   }
@@ -256,23 +256,25 @@ void testPitch(void)
 // #########################################################################
 // Setup, runs once on boot up
 // #########################################################################
-void setupAHD(void) {
+void setupAHD(bool bTest) {
   //Serial.begin(115200);
   //
   //tft.begin();
   //tft.setRotation(0);
-
+yield();
   tft.fillRect(0,  0, 128, 64, SKY_BLUE);
   tft.fillRect(0, 64, 128, 64, BROWN);
-
+ 
   // Draw the horizon graphic
   drawHorizon(0, 0);
   drawInfo();
-  delay(2000); // Wait to permit visual check
+  delay(100); // Wait to permit visual check
 
   // Test roll and pitch
-  testRoll();
-  testPitch();
+  if (bTest) {
+    testRoll();
+    testPitch();
+    }
 
   tft.setTextColor(TFT_YELLOW, SKY_BLUE);
   tft.setTextDatum(TC_DATUM);            // Centre middle justified

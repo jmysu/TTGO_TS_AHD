@@ -58,6 +58,9 @@ uint8_t g_btns[] =  BUTTONS_MAP;
 char buff[512];
 Ticker btnscanT;
 
+extern void setupAHD(bool test);
+extern void setupIMU();
+
 bool setPowerBoostKeepOn(int en)
 {
     Wire.beginTransmission(IP5306_ADDR);
@@ -71,34 +74,19 @@ bool setPowerBoostKeepOn(int en)
 
 void button_handle(uint8_t gpio)
 {
-    switch (gpio) {
-#ifdef BUTTON_1
-    case BUTTON_1: {
+switch (gpio) {
+    case BUTTON_1: { //Compass
         state = 1;
-    }
-    break;
-#endif
-
-#ifdef BUTTON_2
-    case BUTTON_2: {
+        }
+        break;
+    case BUTTON_2: { //Long press to sleep
         state = 2;
-    }
-    break;
-#endif
-
-#ifdef BUTTON_3
-    case BUTTON_3: {
+        }
+        break;
+    case BUTTON_3: { //AHD
         state = 3;
-    }
-    break;
-#endif
-
-#ifdef BUTTON_4
-    case BUTTON_4: {
-        state = 4;
-    }
-    break;
-#endif
+        }
+        break;
     default:
         break;
     }
@@ -190,7 +178,7 @@ void spisd_test() {
             tft.setTextColor(TFT_GREEN, TFT_BLACK);
             tft.drawString(str, tft.width() / 2, tft.height() / 2);
         }
-        delay(500);
+        //delay(500);
     }
 }
 
@@ -290,8 +278,6 @@ void listDir(fs::FS & fs, const char *dirname, uint8_t levels) {
     }
 }
 
-extern void setupAHD();
-extern void setupIMU();
 void setup() {
     Serial.begin(115200);
     delay(1000);
@@ -356,7 +342,7 @@ void setup() {
     Wire.begin(I2C_SDA, I2C_SCL);
 
     setupIMU();
-    setupAHD();
+    setupAHD(true); //w/ test
     state = 3;
 
     btnscanT.attach_ms(30, button_loop);
@@ -405,19 +391,31 @@ void drawCube()
  }
 }
 */
-extern float pitch,roll;
+
+extern float pitch,roll,heading;
+extern int angle;
 extern void loopAHD(int roll, int pitch);
 extern void loopIMU();
+extern void loopCompass(int head);
+uint8_t stateOld;
 void loop() {
     switch (state) {
     case 1:
-        state = 0;
-        wifi_scan();
+        //state = 0;
+        //wifi_scan();
+        if (stateOld != state) {
+            angle = 0; //reset original compass angle
+            tft.fillScreen(TFT_BLACK);
+            }
+        stateOld = state;    
+        loopIMU(); //update IMU data
+        loopCompass(int(360+heading));
         break;
     case 2:
         state = 0;
         tft.setTextColor(TFT_GREEN, TFT_BLACK);
         tft.fillScreen(TFT_BLACK);
+        delay(100);
         tft.setTextDatum(MC_DATUM);
 #ifdef T4_V12
         tft.drawString("Undefined function", tft.width() / 2, tft.height() / 2);
@@ -429,10 +427,11 @@ void loop() {
     case 3:
         //state = 0;
         //drawCube();
-
+        if (stateOld != state)
+            setupAHD(false);
+        stateOld = state;    
         loopIMU(); //update IMU data
         loopAHD(int(pitch),int(-roll)); //update AHD w/ TTGO TS 
-
         /*
         tft.setTextColor(TFT_GREEN, TFT_BLACK);
         tft.fillScreen(TFT_BLACK);
@@ -461,4 +460,5 @@ void loop() {
     default:
         break;
     }
+    yield();
 }

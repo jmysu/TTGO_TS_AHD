@@ -21,10 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "MPU9250.h"
 extern TwoWire Wire;
 
-// an MPU9250 object with the MPU-9250 sensor on I2C bus 0 with address 0x68
+// an MPU9250 object with the MPU-9250 sensor on I2C bus 0 with address 0x68/0x69
 MPU9250 IMU(Wire,0x69);
 int status;
-float pitch,roll;
+float pitch,roll,heading;
 
 void setupIMU() {
   // serial to display data
@@ -48,10 +48,15 @@ void setupIMU() {
   IMU.setDlpfBandwidth(MPU9250::DLPF_BANDWIDTH_20HZ);
   // setting SRD to 19 for a 50 Hz update rate
   IMU.setSrd(19);
+  //IMU.calibrateMag();
+  //with simple offsets from observations:498,1445,341
+  //IMU.setMagCalX(-500.0, 1.0);
+  //IMU.setMagCalY(-1450.0, 1.0);
+  //IMU.setMagCalZ(-345.0, 1.0);
 }
 
 void loopIMU() {
-  char buf[128];  
+  char buf[256];  
   //float pitch,roll;
   // read the sensor
   IMU.readSensor();
@@ -65,12 +70,27 @@ void loopIMU() {
   //convert radians into degrees
   pitch = pitch * (180.0 / 3.14159);
   roll = roll * (180.0 / 3.14159) ;
-
-  sprintf(buf, "%+6.3f %+6.3f %+6.3f, %+6.3f %+6.3f %+6.3f, %+6.3f %+6.3f %+6.3f, %5.2f°C \tpitch:%+6.2f \troll:%+6.2f\n",
+  double mX = IMU.getMagX_uT();
+  double mY = IMU.getMagY_uT();
+  heading = atan2(mY, mX) * RAD_TO_DEG;
+  //if (heading < 0) heading += 360.0;
+  //if (heading < 0) heading += 360.0;
+/*
+float declinationAngle = 188.8/1000.0;    //angle in rads.  You can find the value for your area with Google
+  head += declinationAngle;
+  if(head < 0.00)
+    head += 2*PI;
+  if(head > 2*PI)
+    head -= 2*PI;
+  head = head * 180.00/M_PI;
+  Serial.print("Heading  ");
+  Serial.println(head);
+*/
+  sprintf(buf, "%+6.3f %+6.3f %+6.3f, %+6.3f %+6.3f %+6.3f, %+6.3f %+6.3f %+6.3f, %5.2f°C\tpitch:%+6.2f\troll:%+6.2f\theading:%6.2f°\n",
   IMU.getAccelX_mss(),IMU.getAccelY_mss(),IMU.getAccelZ_mss(),
   IMU.getGyroX_rads(),IMU.getGyroY_rads(),IMU.getGyroZ_rads(),
   IMU.getMagX_uT(),IMU.getMagY_uT(),IMU.getMagZ_uT(),
-  IMU.getTemperature_C(), pitch, roll
+  IMU.getTemperature_C(), pitch, roll, heading
   );  
   Serial.print(buf);
   /*
