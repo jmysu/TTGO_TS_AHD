@@ -3,7 +3,7 @@
 An artificial horizon display(128x128) with TTGO_TS_ESP32 MPU9250  <br>
 <br>
 
-<img src="picture/TTGO_TS_AHD.gif"/> &nbsp;&nbsp;&nbsp;<img src="picture/TTGO_TS_Compass.gif"/> 
+<img src="picture/TTGO_TS_AHD.gif"/> &nbsp;&nbsp;&nbsp;<img src="picture/TTGO_TS_Compass.gif" width=240/> 
 
 ### References
   - [TFT_eSPI](https://github.com/Bodmer/TFT_eSPI)<br>
